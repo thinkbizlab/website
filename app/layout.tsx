@@ -24,6 +24,15 @@ export const metadata: Metadata = {
   authors: [{ name: 'ThinkBiz Lab', url: 'https://thinkbizlab.com' }],
   creator: 'ThinkBiz Lab',
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://thinkbizlab.com'),
+  icons: {
+    icon: [
+      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/favicon-64x64.png', sizes: '64x64', type: 'image/png' },
+      { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
+    ],
+    apple: [{ url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
+    shortcut: '/favicon.ico',
+  },
   openGraph: {
     siteName: 'ThinkBiz Lab',
     locale: 'th_TH',
