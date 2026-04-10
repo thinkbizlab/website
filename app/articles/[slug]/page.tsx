@@ -17,7 +17,8 @@ function renderContent(content: string): string {
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   try {
-    const [article] = await db.select().from(articles).where(eq(articles.slug, params.slug))
+    const slug = decodeURIComponent(params.slug)
+    const [article] = await db.select().from(articles).where(eq(articles.slug, slug))
     if (!article) return { title: 'Not Found' }
     const base = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://thinkbizlab.com'
     return {
@@ -45,7 +46,8 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 export default async function ArticlePage({ params }: { params: { slug: string } }) {
   let article: typeof articles.$inferSelect | undefined
   try {
-    const [found] = await db.select().from(articles).where(eq(articles.slug, params.slug))
+    const slug = decodeURIComponent(params.slug)
+    const [found] = await db.select().from(articles).where(eq(articles.slug, slug))
     article = found
   } catch { /* DB not connected */ }
 
