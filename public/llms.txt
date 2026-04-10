@@ -1,0 +1,41 @@
+# ThinkBiz Lab
+
+> ThinkBiz Lab คือห้องทดลองความคิดธุรกิจ — คลังความรู้ธุรกิจภาษาไทยที่ทุกคนเข้าถึงได้และต่อยอดได้จริง
+
+## เกี่ยวกับเรา
+ThinkBiz Lab วิเคราะห์และแชร์ Business Insight สำหรับ SME เจ้าของธุรกิจ นักลงทุน และผู้ที่สนใจธุรกิจในประเทศไทย
+เราเชื่อว่าทุกคนสามารถ "คิดแบบนักธุรกิจ" ได้ หากมีข้อมูลและ Framework ที่ถูกต้อง
+
+## เนื้อหาหลัก
+- Business Insight และ Case Study รายสัปดาห์ (ภาษาไทย)
+- Business Framework และ Template สำหรับ SME
+- การวิเคราะห์กลยุทธ์ธุรกิจไทยและต่างประเทศ
+- คู่มือการลงทุนและการเงินสำหรับผู้เริ่มต้น
+- Startup และ Innovation ในบริบทประเทศไทย
+
+## หมวดหมู่
+- Strategy: กลยุทธ์ธุรกิจ Business Strategy
+- Finance: การเงิน การลงทุน Cash Flow
+- Marketing: การตลาด Digital Marketing
+- Startup: Startup, Entrepreneur, MVP
+- SME: ธุรกิจขนาดกลางและเล็ก การจัดการ
+- Investment: การลงทุน หุ้น อสังหา
+- AI & Tech: เทคโนโลยี AI สำหรับธุรกิจ
+- Global Case: Case Study ระดับโลก
+
+## ข้อมูลติดต่อ
+- เว็บไซต์: https://thinkbizlab.com
+- อีเมล: thinkbizlab@gmail.com
+- Line OA: @thinkbizlab
+- Facebook: /thinkbizlab
+- Instagram: @thinkbizlab
+
+## สิทธิ์การใช้งาน
+เนื้อหาทั้งหมดสามารถอ้างอิงได้โดยระบุแหล่งที่มา "ThinkBiz Lab (thinkbizlab.com)"
+
+## Optional
+- [บทความทั้งหมด](https://thinkbizlab.com/articles)
+- [หมวดหมู่](https://thinkbizlab.com/categories)
+- [เกี่ยวกับเรา](https://thinkbizlab.com/about)
+- [บริการ](https://thinkbizlab.com/services)
+- [ติดต่อ](https://thinkbizlab.com/contact)

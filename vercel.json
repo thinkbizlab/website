@@ -1,0 +1,16 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/publish",
+      "schedule": "0 1 * * *"
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "thinkbizlab.com" }],
+      "destination": "https://www.thinkbizlab.com/:path*",
+      "permanent": true
+    }
+  ]
+}
