@@ -78,15 +78,9 @@ export async function GET(req: NextRequest) {
 
   const falKey = await getFalKey()
 
-  // ── No fal.ai key: return SVG-based fallback image ──────────────────
+  // ── No fal.ai key: return error JSON so form shows real message ──────
   if (!falKey) {
-    const svg = buildFallbackSvg(title, category)
-    return new NextResponse(svg, {
-      headers: {
-        'Content-Type': 'image/svg+xml',
-        'Cache-Control': 'no-store',
-      },
-    })
+    return NextResponse.json({ error: 'FAL_KEY not configured' }, { status: 500 })
   }
 
   // ── fal.ai Flux Schnell ──────────────────────────────────────────────
@@ -110,31 +104,20 @@ export async function GET(req: NextRequest) {
 
     if (!res.ok) {
       const err = await res.text()
-      // Fall back to SVG on API error
-      console.error('fal.ai error:', err)
-      const svg = buildFallbackSvg(title, category)
-      return new NextResponse(svg, {
-        headers: { 'Content-Type': 'image/svg+xml', 'Cache-Control': 'no-store' },
-      })
+      return NextResponse.json({ error: `fal.ai error: ${err}` }, { status: 500 })
     }
 
     const data = await res.json()
     const imageUrl: string = data?.images?.[0]?.url
 
     if (!imageUrl) {
-      const svg = buildFallbackSvg(title, category)
-      return new NextResponse(svg, {
-        headers: { 'Content-Type': 'image/svg+xml', 'Cache-Control': 'no-store' },
-      })
+      return NextResponse.json({ error: 'No image returned from fal.ai' }, { status: 500 })
     }
 
     // Fetch the image and stream it back
     const imgRes = await fetch(imageUrl)
     if (!imgRes.ok) {
-      const svg = buildFallbackSvg(title, category)
-      return new NextResponse(svg, {
-        headers: { 'Content-Type': 'image/svg+xml', 'Cache-Control': 'no-store' },
-      })
+      return NextResponse.json({ error: `Failed to fetch generated image: ${imgRes.status}` }, { status: 500 })
     }
 
     const buffer = await imgRes.arrayBuffer()
@@ -145,11 +128,6 @@ export async function GET(req: NextRequest) {
       },
     })
   } catch (e) {
-    // Fallback on any exception
-    console.error('generate-cover error:', e)
-    const svg = buildFallbackSvg(title, category)
-    return new NextResponse(svg, {
-      headers: { 'Content-Type': 'image/svg+xml', 'Cache-Control': 'no-store' },
-    })
+    return NextResponse.json({ error: String(e) }, { status: 500 })
   }
 }
