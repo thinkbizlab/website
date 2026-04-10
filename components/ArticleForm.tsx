@@ -29,6 +29,10 @@ export function ArticleForm({ article, mode }: Props) {
   const [geoScore, setGeoScore] = useState(article?.geoScore ?? 0)
   const [showModal, setShowModal] = useState(false)
   const [generatingCover, setGeneratingCover] = useState(false)
+  const [lineTestLoading, setLineTestLoading] = useState(false)
+  const [lineBroadcastLoading, setLineBroadcastLoading] = useState(false)
+  const [lineMsg, setLineMsg] = useState('')
+  const [showBroadcastConfirm, setShowBroadcastConfirm] = useState(false)
   const [coverPrompt, setCoverPrompt] = useState(() => {
     // Auto-populate from article content on first load
     const parts: string[] = []
@@ -195,6 +199,32 @@ export function ArticleForm({ article, mode }: Props) {
   }
 
   const copyToClipboard = (text: string) => navigator.clipboard.writeText(text)
+
+  const sendLineBroadcast = async (mode: 'test' | 'all') => {
+    if (!form.lineBroadcastMsg.trim()) { setLineMsg('กรอกข้อความก่อนส่ง'); return }
+    if (mode === 'test') setLineTestLoading(true)
+    else setLineBroadcastLoading(true)
+    setLineMsg('')
+    try {
+      const res = await fetch('/api/line/broadcast', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ articleId: article?.id, message: form.lineBroadcastMsg, mode }),
+      })
+      const data = await res.json()
+      if (data.ok) {
+        setLineMsg(mode === 'test' ? '✓ ส่ง Test ให้ Admin แล้ว' : '✓ Broadcast ถึงทุกคนแล้ว')
+      } else {
+        setLineMsg(`เกิดข้อผิดพลาด: ${data.error}`)
+      }
+    } catch (e) {
+      setLineMsg(`เกิดข้อผิดพลาด: ${String(e)}`)
+    } finally {
+      setLineTestLoading(false)
+      setLineBroadcastLoading(false)
+      setShowBroadcastConfirm(false)
+    }
+  }
 
   const generateCover = async () => {
     if (!form.title.trim()) return
@@ -584,6 +614,59 @@ export function ArticleForm({ article, mode }: Props) {
               </button>
             </div>
           </Field>
+          {/* Broadcast buttons */}
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => sendLineBroadcast('test')}
+              disabled={lineTestLoading || lineBroadcastLoading}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg font-mono text-xs border transition-all hover:bg-white/5 disabled:opacity-40"
+              style={{ borderColor: 'rgba(16,185,129,.3)', color: '#10B981' }}
+            >
+              {lineTestLoading
+                ? <><span className="w-3 h-3 rounded-full border border-green-400/30 border-t-green-400 animate-spin" />ส่งอยู่...</>
+                : <>🧪 Test (ส่งให้ Admin)</>}
+            </button>
+
+            {!showBroadcastConfirm ? (
+              <button
+                type="button"
+                onClick={() => setShowBroadcastConfirm(true)}
+                disabled={lineTestLoading || lineBroadcastLoading}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg font-mono text-xs border transition-all hover:bg-white/5 disabled:opacity-40"
+                style={{ borderColor: 'rgba(124,58,237,.3)', color: '#A78BFA' }}
+              >
+                📣 Broadcast ถึงทุกคน
+              </button>
+            ) : (
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg border" style={{ borderColor: 'rgba(239,68,68,.3)', background: 'rgba(239,68,68,.06)' }}>
+                <span className="font-mono text-xs" style={{ color: '#F87171' }}>ยืนยัน Broadcast ถึงทุกคน?</span>
+                <button
+                  type="button"
+                  onClick={() => sendLineBroadcast('all')}
+                  disabled={lineBroadcastLoading}
+                  className="px-2 py-0.5 rounded font-mono text-xs font-bold transition-all"
+                  style={{ background: '#EF4444', color: '#fff' }}
+                >
+                  {lineBroadcastLoading ? 'ส่งอยู่...' : 'ยืนยัน'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowBroadcastConfirm(false)}
+                  className="font-mono text-xs text-muted hover:text-white"
+                >
+                  ยกเลิก
+                </button>
+              </div>
+            )}
+          </div>
+
+          {lineMsg && (
+            <div className="mt-2 font-mono text-xs" style={{ color: lineMsg.startsWith('✓') ? '#10B981' : '#F87171' }}>
+              {lineMsg}
+            </div>
+          )}
+
           {article?.lineBroadcastSent && (
             <div className="mt-2 flex items-center gap-2 font-mono text-xs" style={{ color: '#10B981' }}>
               <span>✓</span>
