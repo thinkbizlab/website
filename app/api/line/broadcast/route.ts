@@ -18,22 +18,23 @@ export async function POST(req: NextRequest) {
 
   try {
     if (mode === 'test') {
-      // Push to admin LINE user ID only
-      const adminUserId = process.env.LINE_ADMIN_USER_ID
-      if (!adminUserId) {
-        return NextResponse.json({ error: 'LINE_ADMIN_USER_ID not configured — add it in Vercel env vars' }, { status: 500 })
+      // Multicast to all LINE OA admins (comma-separated user IDs)
+      const raw = process.env.LINE_ADMIN_USER_IDS ?? process.env.LINE_ADMIN_USER_ID ?? ''
+      const adminIds = raw.split(',').map(s => s.trim()).filter(Boolean)
+      if (adminIds.length === 0) {
+        return NextResponse.json({ error: 'LINE_ADMIN_USER_IDS not configured — add comma-separated LINE user IDs in Vercel env vars' }, { status: 500 })
       }
 
-      const res = await fetch('https://api.line.me/v2/bot/message/push', {
+      const res = await fetch('https://api.line.me/v2/bot/message/multicast', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ to: adminUserId, messages: [{ type: 'text', text: `[TEST]\n${message}` }] }),
+        body: JSON.stringify({ to: adminIds, messages: [{ type: 'text', text: `[TEST]\n${message}` }] }),
       })
       if (!res.ok) {
         const err = await res.json()
         return NextResponse.json({ error: JSON.stringify(err) }, { status: 500 })
       }
-      return NextResponse.json({ ok: true, mode: 'test' })
+      return NextResponse.json({ ok: true, mode: 'test', sentTo: adminIds.length })
     }
 
     // mode === 'all' — broadcast to all followers
