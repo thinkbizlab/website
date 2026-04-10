@@ -194,7 +194,10 @@ export function ArticleForm({ article, mode }: Props) {
     try {
       const params = new URLSearchParams({ title: form.title, category: form.category })
       const res = await fetch(`/api/generate-cover?${params}`)
-      if (!res.ok) throw new Error('Failed to generate')
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({ error: `HTTP ${res.status}` }))
+        throw new Error(errData.error ?? `HTTP ${res.status}`)
+      }
       const blob = await res.blob()
       const uploadRes = await fetch(`/api/upload?filename=cover-${Date.now()}.png`, {
         method: 'POST',
