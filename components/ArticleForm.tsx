@@ -486,10 +486,13 @@ export function ArticleForm({ article, mode }: Props) {
               onChange={url => setForm(f => ({ ...f, coverImage: url }))}
             />
             <div className="mt-3 space-y-2">
+              <label className="block font-mono text-[10px] font-semibold uppercase tracking-widest" style={{ color: '#A78BFA' }}>
+                คำอธิบายรูปภาพที่ต้องการสร้าง
+              </label>
               <textarea
                 value={coverPrompt}
                 onChange={e => setCoverPrompt(e.target.value)}
-                placeholder="ระบุรายละเอียดเพิ่มเติมสำหรับภาพปก เช่น Thai business woman at desk, warm lighting, Bangkok skyline background..."
+                placeholder="เช่น Thai business woman at desk, warm lighting, Bangkok skyline background..."
                 rows={2}
                 className="w-full px-3 py-2 rounded-lg border font-mono text-xs resize-none outline-none"
                 style={{ background: 'rgba(15,13,26,.7)', borderColor: 'rgba(124,58,237,.25)', color: '#C4B5FD' }}
