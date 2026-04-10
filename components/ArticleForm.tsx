@@ -263,7 +263,7 @@ export function ArticleForm({ article, mode }: Props) {
       if (!res.ok) { const e = await res.json(); throw new Error(e.error) }
       if (statusOverride) setForm(f => ({ ...f, status: statusOverride }))
       setMsg(`✓ บันทึกสำเร็จ${statusOverride === 'draft' ? ' (Draft)' : statusOverride === 'published' ? ' (เผยแพร่แล้ว)' : ''}`)
-      if (mode === 'new') router.push('/admin/articles')
+      if (mode === 'new') window.location.href = '/admin/articles'
     } catch (e) {
       setMsg(`เกิดข้อผิดพลาด: ${String(e)}`)
     } finally {
@@ -275,7 +275,7 @@ export function ArticleForm({ article, mode }: Props) {
     if (!confirm('ต้องการลบบทความนี้?')) return
     setDeleting(true)
     await fetch(`/api/articles/${article!.id}`, { method: 'DELETE' })
-    router.push('/admin/articles')
+    window.location.href = '/admin/articles'
   }
 
   const geoColor = geoScore >= 80 ? '#10B981' : geoScore >= 60 ? '#F59E0B' : geoScore >= 40 ? '#F97316' : '#EF4444'
