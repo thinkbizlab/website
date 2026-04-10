@@ -29,7 +29,14 @@ export function ArticleForm({ article, mode }: Props) {
   const [geoScore, setGeoScore] = useState(article?.geoScore ?? 0)
   const [showModal, setShowModal] = useState(false)
   const [generatingCover, setGeneratingCover] = useState(false)
-  const [coverPrompt, setCoverPrompt] = useState('')
+  const [coverPrompt, setCoverPrompt] = useState(() => {
+    // Auto-populate from article content on first load
+    const parts: string[] = []
+    if (article?.excerpt) parts.push(article.excerpt.slice(0, 120))
+    if (article?.keyPoints?.length) parts.push(article.keyPoints.slice(0, 2).join(', '))
+    if (article?.aiSummaryA) parts.push(article.aiSummaryA.slice(0, 80))
+    return parts.join('. ')
+  })
   const [previewPlatform, setPreviewPlatform] = useState<PreviewPlatform | null>(null)
   const [categoryList, setCategoryList] = useState<Category[]>([])
 
@@ -193,7 +200,13 @@ export function ArticleForm({ article, mode }: Props) {
     if (!form.title.trim()) return
     setGeneratingCover(true)
     try {
-      const params = new URLSearchParams({ title: form.title, category: form.category, prompt: coverPrompt })
+      const params = new URLSearchParams({
+        title: form.title,
+        category: form.category,
+        excerpt: form.excerpt.slice(0, 150),
+        keyPoints: form.keyPoints.split('\n').filter(Boolean).slice(0, 3).join(', '),
+        prompt: coverPrompt,
+      })
       const res = await fetch(`/api/generate-cover?${params}`)
       if (!res.ok) {
         const errData = await res.json().catch(() => ({ error: `HTTP ${res.status}` }))

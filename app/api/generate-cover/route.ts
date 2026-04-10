@@ -3,9 +3,9 @@ import { db } from '@/lib/db'
 import { settings } from '@/lib/schema'
 import { eq } from 'drizzle-orm'
 
-// Build a photography-style prompt from article title + category
-function buildPrompt(title: string, category: string): string {
-  const categoryPrompts: Record<string, string> = {
+// Build a photography-style prompt from article content
+function buildPrompt(title: string, category: string, excerpt: string, keyPoints: string): string {
+  const categoryScenes: Record<string, string> = {
     'Strategy':    'corporate strategy meeting, business professionals in modern office, aerial city view',
     'Finance':     'financial charts, stock market data, business analytics dashboard, coins and graphs',
     'Marketing':   'digital marketing concept, social media screens, creative agency, colorful campaign',
@@ -16,8 +16,15 @@ function buildPrompt(title: string, category: string): string {
     'Global Case': 'global business, world map, international trade, multicultural team meeting',
   }
 
-  const base = categoryPrompts[category] || 'business professionals, modern corporate environment, success concept'
-  return `Professional editorial photograph for business article about "${title}". ${base}. High quality DSLR photo, natural lighting, sharp focus, magazine cover style, 16:9 aspect ratio, photorealistic.`
+  const scene = categoryScenes[category] || 'business professionals, modern corporate environment, success concept'
+
+  // Build context from article content
+  const contentParts: string[] = []
+  if (excerpt) contentParts.push(excerpt.slice(0, 120))
+  if (keyPoints) contentParts.push(keyPoints.slice(0, 100))
+  const contentContext = contentParts.join('. ')
+
+  return `Professional editorial photograph for business article titled "${title}". ${contentContext ? `Article context: ${contentContext}. ` : ''}Visual style: ${scene}. High quality DSLR photo, natural lighting, sharp focus, magazine cover style, 16:9 aspect ratio, photorealistic.`
 }
 
 async function getFalKey(): Promise<string> {
@@ -34,6 +41,8 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const title = searchParams.get('title') || 'ThinkBiz Lab'
   const category = searchParams.get('category') || ''
+  const excerpt = searchParams.get('excerpt') || ''
+  const keyPoints = searchParams.get('keyPoints') || ''
   const customPrompt = searchParams.get('prompt') || ''
 
   const falKey = await getFalKey()
@@ -44,7 +53,7 @@ export async function GET(req: NextRequest) {
   }
 
   // ── fal.ai Flux Schnell ──────────────────────────────────────────────
-  const basePrompt = buildPrompt(title, category)
+  const basePrompt = buildPrompt(title, category, excerpt, keyPoints)
   const prompt = customPrompt.trim()
     ? `${basePrompt} Additional details: ${customPrompt.trim()}`
     : basePrompt
