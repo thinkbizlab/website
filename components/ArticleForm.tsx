@@ -29,6 +29,7 @@ export function ArticleForm({ article, mode }: Props) {
   const [geoScore, setGeoScore] = useState(article?.geoScore ?? 0)
   const [showModal, setShowModal] = useState(false)
   const [generatingCover, setGeneratingCover] = useState(false)
+  const [coverPrompt, setCoverPrompt] = useState('')
   const [previewPlatform, setPreviewPlatform] = useState<PreviewPlatform | null>(null)
   const [categoryList, setCategoryList] = useState<Category[]>([])
 
@@ -192,7 +193,7 @@ export function ArticleForm({ article, mode }: Props) {
     if (!form.title.trim()) return
     setGeneratingCover(true)
     try {
-      const params = new URLSearchParams({ title: form.title, category: form.category })
+      const params = new URLSearchParams({ title: form.title, category: form.category, prompt: coverPrompt })
       const res = await fetch(`/api/generate-cover?${params}`)
       if (!res.ok) {
         const errData = await res.json().catch(() => ({ error: `HTTP ${res.status}` }))
@@ -441,18 +442,28 @@ export function ArticleForm({ article, mode }: Props) {
               value={form.coverImage}
               onChange={url => setForm(f => ({ ...f, coverImage: url }))}
             />
-            <button
-              type="button"
-              onClick={generateCover}
-              disabled={generatingCover || !form.title.trim()}
-              className="mt-2 flex items-center gap-2 px-3 py-1.5 rounded-lg font-mono text-xs border transition-all hover:bg-purple/10 disabled:opacity-40"
-              style={{ borderColor: 'rgba(124,58,237,.3)', color: '#A78BFA' }}
-              title={form.title.trim() ? 'สร้างภาพปกขนาด 1200×630 อัตโนมัติ' : 'กรอกชื่อบทความก่อน'}
-            >
-              {generatingCover
-                ? <><span className="w-3 h-3 rounded-full border border-purple/30 border-t-purple animate-spin" />กำลังสร้างภาพปก...</>
-                : <>🎨 สร้างภาพปก AI (1200×630)</>}
-            </button>
+            <div className="mt-3 space-y-2">
+              <textarea
+                value={coverPrompt}
+                onChange={e => setCoverPrompt(e.target.value)}
+                placeholder="ระบุรายละเอียดเพิ่มเติมสำหรับภาพปก เช่น Thai business woman at desk, warm lighting, Bangkok skyline background..."
+                rows={2}
+                className="w-full px-3 py-2 rounded-lg border font-mono text-xs resize-none outline-none"
+                style={{ background: 'rgba(15,13,26,.7)', borderColor: 'rgba(124,58,237,.25)', color: '#C4B5FD' }}
+              />
+              <button
+                type="button"
+                onClick={generateCover}
+                disabled={generatingCover || !form.title.trim()}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg font-mono text-xs border transition-all hover:bg-purple/10 disabled:opacity-40"
+                style={{ borderColor: 'rgba(124,58,237,.3)', color: '#A78BFA' }}
+                title={form.title.trim() ? 'สร้างภาพปกขนาด 1200×630 อัตโนมัติ' : 'กรอกชื่อบทความก่อน'}
+              >
+                {generatingCover
+                  ? <><span className="w-3 h-3 rounded-full border border-purple/30 border-t-purple animate-spin" />กำลังสร้างภาพปก...</>
+                  : <>🎨 สร้างภาพปก AI (1200×630)</>}
+              </button>
+            </div>
           </Field>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <Field label="Tags (คั่นด้วย ,)">

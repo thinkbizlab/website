@@ -34,6 +34,7 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const title = searchParams.get('title') || 'ThinkBiz Lab'
   const category = searchParams.get('category') || ''
+  const customPrompt = searchParams.get('prompt') || ''
 
   const falKey = await getFalKey()
 
@@ -43,7 +44,10 @@ export async function GET(req: NextRequest) {
   }
 
   // ── fal.ai Flux Schnell ──────────────────────────────────────────────
-  const prompt = buildPrompt(title, category)
+  const basePrompt = buildPrompt(title, category)
+  const prompt = customPrompt.trim()
+    ? `${basePrompt} Additional details: ${customPrompt.trim()}`
+    : basePrompt
 
   try {
     const res = await fetch('https://fal.run/fal-ai/flux/schnell', {
