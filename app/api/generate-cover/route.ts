@@ -29,47 +29,6 @@ async function getFalKey(): Promise<string> {
   return process.env.FAL_KEY ?? ''
 }
 
-// Fallback: generate a simple gradient PNG using SVG → canvas trick
-// Returns a minimal SVG-based image as PNG bytes
-function buildFallbackSvg(title: string, category: string): string {
-  const safe = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
-  const words = title.split(' ')
-  // Split into up to 3 lines of ~5 words
-  const lines: string[] = []
-  for (let i = 0; i < words.length; i += 5) {
-    lines.push(words.slice(i, i + 5).join(' '))
-    if (lines.length >= 3) break
-  }
-  const lineY = [220, 270, 320]
-
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
-  <defs>
-    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#0F0D1A"/>
-      <stop offset="50%" style="stop-color:#1E1030"/>
-      <stop offset="100%" style="stop-color:#2D1654"/>
-    </linearGradient>
-    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" style="stop-color:#7C3AED"/>
-      <stop offset="100%" style="stop-color:#A855F7"/>
-    </linearGradient>
-  </defs>
-  <rect width="1200" height="630" fill="url(#bg)"/>
-  <!-- Decorative circles -->
-  <circle cx="1050" cy="100" r="300" fill="#7C3AED" opacity="0.08"/>
-  <circle cx="150" cy="530" r="200" fill="#A855F7" opacity="0.06"/>
-  <!-- Top accent bar -->
-  <rect x="60" y="60" width="120" height="4" rx="2" fill="url(#accent)"/>
-  <!-- Category badge -->
-  <rect x="60" y="85" width="${Math.min(category.length * 11 + 32, 220)}" height="28" rx="14" fill="#7C3AED" opacity="0.3"/>
-  <text x="76" y="104" font-family="Arial, sans-serif" font-size="13" font-weight="600" fill="#C4B5FD" letter-spacing="1">${safe(category.toUpperCase())}</text>
-  <!-- Title lines -->
-  ${lines.map((line, i) => `<text x="60" y="${lineY[i] ?? 360}" font-family="Arial Black, Arial, sans-serif" font-size="${lines.length > 2 ? 52 : 60}" font-weight="900" fill="white" opacity="0.95">${safe(line)}</text>`).join('\n  ')}
-  <!-- Bottom accent -->
-  <rect x="60" y="540" width="60" height="3" rx="1.5" fill="url(#accent)"/>
-  <text x="60" y="575" font-family="Arial, sans-serif" font-size="16" fill="#9B8EC4" opacity="0.6">ThinkBiz Lab</text>
-</svg>`
-}
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
