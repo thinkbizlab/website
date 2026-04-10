@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+
 import type { Article, Category } from '@/lib/schema'
 import { CoverImageUpload } from './CoverImageUpload'
 import { RichEditor } from './RichEditor'
@@ -22,7 +22,7 @@ const STATUS_OPTIONS = [
 ]
 
 export function ArticleForm({ article, mode }: Props) {
-  const router = useRouter()
+
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [msg, setMsg] = useState('')
