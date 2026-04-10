@@ -12,15 +12,24 @@ export async function GET() {
   const map = Object.fromEntries(rows.map(r => [r.key, r.value]))
 
   const enabled = map['cron_enabled'] !== 'false'
-  const anthropicKey = map['anthropic_api_key'] ?? ''
-  const maskedKey = anthropicKey.length > 8
-    ? anthropicKey.slice(0, 10) + '••••••••••••••••' + anthropicKey.slice(-4)
-    : anthropicKey ? '••••••••' : ''
+
+  const mask = (k: string) => {
+    const v = map[k] ?? ''
+    return {
+      set: !!v,
+      masked: v.length > 8 ? v.slice(0, 6) + '••••••••••••' + v.slice(-4) : v ? '••••••••' : '',
+    }
+  }
+
+  const anthropic = mask('anthropic_api_key')
+  const fal = mask('fal_api_key')
 
   return NextResponse.json({
     cron_enabled: enabled,
-    anthropic_key_set: !!anthropicKey,
-    anthropic_key_masked: maskedKey,
+    anthropic_key_set: anthropic.set,
+    anthropic_key_masked: anthropic.masked,
+    fal_key_set: fal.set,
+    fal_key_masked: fal.masked,
     timezone: map['timezone'] ?? 'Asia/Bangkok',
   })
 }
@@ -52,6 +61,15 @@ export async function POST(req: Request) {
     if (!key) return NextResponse.json({ error: 'Key cannot be empty' }, { status: 400 })
     await db.insert(settings)
       .values({ key: 'anthropic_api_key', value: key, updatedAt: new Date() })
+      .onConflictDoUpdate({ target: settings.key, set: { value: key, updatedAt: new Date() } })
+    return NextResponse.json({ ok: true })
+  }
+
+  if ('fal_api_key' in body) {
+    const key = String(body.fal_api_key).trim()
+    if (!key) return NextResponse.json({ error: 'Key cannot be empty' }, { status: 400 })
+    await db.insert(settings)
+      .values({ key: 'fal_api_key', value: key, updatedAt: new Date() })
       .onConflictDoUpdate({ target: settings.key, set: { value: key, updatedAt: new Date() } })
     return NextResponse.json({ ok: true })
   }

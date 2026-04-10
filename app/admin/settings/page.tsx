@@ -16,6 +16,14 @@ export default function SettingsPage() {
   const [testing, setTesting] = useState(false)
   const [testResult, setTestResult] = useState<{ ok: boolean; msg: string } | null>(null)
 
+  // fal.ai key
+  const [falKey, setFalKey] = useState('')
+  const [falMasked, setFalMasked] = useState('')
+  const [falSet, setFalSet] = useState(false)
+  const [showFalKey, setShowFalKey] = useState(false)
+  const [savingFalKey, setSavingFalKey] = useState(false)
+  const [falKeyMsg, setFalKeyMsg] = useState('')
+
   // Timezone
   const [timezone, setTimezone] = useState('Asia/Bangkok')
   const [savingTz, setSavingTz] = useState(false)
@@ -26,6 +34,8 @@ export default function SettingsPage() {
       setCronEnabled(d.cron_enabled)
       setAnthropicSet(d.anthropic_key_set)
       setAnthropicMasked(d.anthropic_key_masked ?? '')
+      setFalSet(d.fal_key_set)
+      setFalMasked(d.fal_key_masked ?? '')
       setTimezone(d.timezone ?? 'Asia/Bangkok')
     })
   }, [])
@@ -73,6 +83,28 @@ export default function SettingsPage() {
       setTestResult({ ok: false, msg: String(e) })
     }
     setTesting(false)
+  }
+
+  const saveFalKey = async () => {
+    if (!falKey.trim()) return
+    setSavingFalKey(true)
+    setFalKeyMsg('')
+    const res = await fetch('/api/settings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ fal_api_key: falKey.trim() }),
+    })
+    const data = await res.json()
+    if (data.ok) {
+      setFalKeyMsg('✓ บันทึก fal.ai Key แล้ว')
+      setFalSet(true)
+      setFalKey('')
+      setShowFalKey(false)
+      fetch('/api/settings').then(r => r.json()).then(d => setFalMasked(d.fal_key_masked ?? ''))
+    } else {
+      setFalKeyMsg(`เกิดข้อผิดพลาด: ${data.error}`)
+    }
+    setSavingFalKey(false)
   }
 
   const saveAnthropicKey = async () => {
@@ -193,6 +225,80 @@ export default function SettingsPage() {
 
         {keyMsg && !showKey && (
           <div className="font-mono text-xs" style={{ color: '#10B981' }}>{keyMsg}</div>
+        )}
+
+        <div className="font-mono text-[10px] pt-1" style={{ color: 'rgba(155,142,196,.45)' }}>
+          Key ที่บันทึกใน DB จะมีความสำคัญกว่า Environment Variable
+        </div>
+      </div>
+
+      {/* fal.ai API Key */}
+      <div className="rounded-xl border p-6 space-y-4 mb-6" style={{ borderColor: 'rgba(124,58,237,.18)', background: 'rgba(30,16,48,.4)' }}>
+        <div className="flex items-center gap-2">
+          <div className="font-mono text-xs font-bold text-purple uppercase tracking-widest">🖼️ fal.ai (Cover Image AI)</div>
+          {falSet && (
+            <span className="font-mono text-[10px] px-2 py-0.5 rounded-full" style={{ background: 'rgba(16,185,129,.12)', color: '#10B981' }}>
+              ✓ ตั้งค่าแล้ว
+            </span>
+          )}
+        </div>
+
+        {falSet && falMasked && !showFalKey && (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between px-3 py-2 rounded-lg" style={{ background: 'rgba(124,58,237,.08)', border: '1px solid rgba(124,58,237,.2)' }}>
+              <span className="font-mono text-sm" style={{ color: '#A78BFA' }}>{falMasked}</span>
+              <button onClick={() => setShowFalKey(true)} className="font-mono text-[10px] text-accent hover:underline ml-4">
+                เปลี่ยน Key
+              </button>
+            </div>
+          </div>
+        )}
+
+        {(!falSet || showFalKey) && (
+          <div className="space-y-3">
+            <div className="space-y-1.5">
+              <label className="block text-sm font-semibold text-white">fal.ai API Key</label>
+              <p className="font-mono text-[10px]" style={{ color: 'rgba(155,142,196,.6)' }}>
+                ดูได้ที่ fal.ai/dashboard — ใช้สำหรับสร้างภาพปกบทความด้วย Flux AI
+              </p>
+              <input
+                type="password"
+                value={falKey}
+                onChange={e => setFalKey(e.target.value)}
+                placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                className="w-full px-3 py-2.5 rounded-lg border text-white text-sm outline-none font-mono"
+                style={{ background: 'rgba(15,13,26,.7)', borderColor: 'rgba(124,58,237,.25)', color: '#fff' }}
+                onKeyDown={e => e.key === 'Enter' && saveFalKey()}
+              />
+            </div>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={saveFalKey}
+                disabled={savingFalKey || !falKey.trim()}
+                className="px-4 py-2 rounded-lg font-semibold text-sm transition-all hover:opacity-90 disabled:opacity-40"
+                style={{ background: 'linear-gradient(135deg, #7C3AED, #A855F7)', color: '#fff' }}
+              >
+                {savingFalKey ? 'กำลังบันทึก...' : 'บันทึก API Key'}
+              </button>
+              {showFalKey && (
+                <button
+                  onClick={() => { setShowFalKey(false); setFalKey('') }}
+                  className="font-mono text-xs text-purple hover:underline"
+                >
+                  ยกเลิก
+                </button>
+              )}
+            </div>
+            {falKeyMsg && (
+              <div className="font-mono text-xs" style={{ color: falKeyMsg.startsWith('✓') ? '#10B981' : '#F87171' }}>
+                {falKeyMsg}
+              </div>
+            )}
+          </div>
+        )}
+
+        {falKeyMsg && !showFalKey && (
+          <div className="font-mono text-xs" style={{ color: '#10B981' }}>{falKeyMsg}</div>
         )}
 
         <div className="font-mono text-[10px] pt-1" style={{ color: 'rgba(155,142,196,.45)' }}>
